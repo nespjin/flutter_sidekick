@@ -1,0 +1,93 @@
+name: sidekick
+description: Flutter Version Manager.
+
+publish_to: "none"
+
+version: 1.1.1
+
+environment:
+  sdk: ">=2.16.0 <3.0.0"
+
+dependencies:
+  animations: ^2.0.2
+  async: ^2.6.1
+  bitsdojo_window: ^0.1.5
+  date_time_format: ^2.0.1
+  dio: ^4.0.0
+  file_selector: ^0.8.2
+  file_selector_linux: ^0.0.2
+  file_selector_macos: ">=0.0.4 <0.9.0"
+  file_selector_windows: ">=0.0.2 <0.9.0"
+  filesize: ^2.0.1
+  flutter:
+    sdk: flutter
+  flutter_acrylic:
+    git:
+      url: https://github.com/alexmercerind/flutter_acrylic.git
+  flutter_hooks: ^0.17.0
+  flutter_localizations:
+    sdk: flutter
+  flutter_spinkit: ^5.0.0
+  fvm: ^2.2.6
+  google_fonts: ^2.1.0
+  gtk_theme_fl: ^0.0.1
+  hive: ^2.0.4
+  hive_flutter: ^1.0.0
+  hooks_riverpod: ^0.14.0+4
+  i18next:
+    git: https://github.com/Ahmadre/i18next.git
+  material_design_icons_flutter: ^5.0.5955-rc.1
+  material_floating_search_bar:
+    git:
+      url: https://github.com/lrorpilla/material_floating_search_bar
+  oktoast: ^3.2.0
+  open_file:
+    git:
+      url: https://github.com/crazecoder/open_file
+  path_provider: ^2.0.1
+  pub_api_client: ^2.0.5
+  pubspec_parse: ^1.0.0
+  responsive_grid: ^2.0.0
+  shared_preferences: ^2.0.6
+  system_info2: ^2.0.4
+  url_launcher: ^6.0.4
+  watcher: ^1.0.0
+  window_manager: ">=0.2.3"
+  window_size:
+    git:
+      url: https://github.com/google/flutter-desktop-embedding.git
+      path: plugins/window_size
+
+dev_dependencies:
+  build_runner: ^2.0.3
+  build_version: ^2.0.3
+  flutter_lints: ^1.0.4
+  flutter_test:
+    sdk: flutter
+  hive_generator: ^1.1.0
+  msix: ^2.7.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - localizations/ar-SA/
+    - localizations/bn-BD/
+    - localizations/de-DE/
+    - localizations/en-GB/
+    - localizations/en-US/
+    - localizations/es-ES/
+    - localizations/sv-SE/
+    - localizations/zh-CN/
+    - localizations/zh-TW/
+    - localizations/ko-KR/
+    - localizations/ja-JP/
+    - localizations/pl-PL/
+    - localizations/pt-BR/
+    - localizations/it-IT/
+    - localizations/uk-UA/
+    - localizations/hi-IN/
+    - localizations/id-ID/
+    - localizations/fr-FR/
+
+flutter_intl:
+  enabled: true

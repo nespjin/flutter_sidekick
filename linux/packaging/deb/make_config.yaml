@@ -1,0 +1,33 @@
+display_name: Flutter Sidekick
+package_name: sidekick
+maintainer:
+  name: https://github.com/fluttertools/sidekick
+  email: contact@eduardom.dev
+# co_authors:
+#   - name: Kingkor Roy Tirtho
+#     email: krtirtho@gmail.com
+priority: optional
+section: x11
+# section: gnome
+installed_size: 9203538
+essential: false
+icon: assets/promo-windows/icon.png
+
+# postinstall_scripts:
+#   - echo `Installed my awesome app`
+# postuninstall_scripts:
+#   - echo `Surprised Pickachu face`
+
+# keywords:
+#   - Hello
+#   - World
+#   - Test
+#   - Application
+
+# generic_name: Music Application
+
+categories:
+  - Utility
+#  - Media
+
+startup_notify: true

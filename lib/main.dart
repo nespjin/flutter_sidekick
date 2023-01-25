@@ -1,0 +1,178 @@
+// ignore_for_file: unawaited_futures
+
+import 'dart:io';
+
+import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gtk_theme_fl/gtk_theme_fl.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:oktoast/oktoast.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sidekick/i18n/language_manager.dart';
+import 'package:sidekick/src/modules/common/utils/migrate_files.dart';
+import 'package:window_manager/window_manager.dart';
+
+import 'src/modules/common/app_shell.dart';
+import 'src/modules/common/constants.dart';
+import 'src/modules/projects/project.dto.dart';
+import 'src/modules/projects/projects.service.dart';
+import 'src/modules/settings/settings.dto.dart';
+import 'src/modules/settings/settings.service.dart';
+import 'src/modules/settings/settings.utils.dart';
+import 'src/screens/error_db_screen.dart';
+import 'src/theme.dart';
+
+GtkThemeData? gtkThemeData;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await windowManager.ensureInitialized();
+
+  // Transparency compatibility for windows & linux
+  if (!(Platform.isMacOS || Platform.isLinux)) {
+    await Window.initialize();
+  }
+
+  Hive.registerAdapter(SidekickSettingsAdapter());
+  Hive.registerAdapter(ProjectPathAdapter());
+  final hiveDir = await getApplicationSupportDirectory();
+
+  // This should only be necessary on the first run after 0.1.1, as DB location has changed.
+  await checkMigration(hiveDir);
+
+  await Hive.initFlutter(hiveDir.absolute.path);
+
+  if (Platform.isLinux) {
+    gtkThemeData = await GtkThemeData.initialize();
+  }
+
+  try {
+    await SettingsService.init();
+    await ProjectsService.init();
+  } on FileSystemException {
+    //print('There was an issue opening the DB');
+  }
+
+  if (!(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    //print('Sidekick is not supported on your platform');
+    exit(0);
+  }
+
+  runApp(const ProviderScope(child: FvmApp()));
+
+  const initialSize = Size(800, 500);
+  windowManager.setMinimumSize(initialSize);
+  windowManager.setSize(initialSize);
+  // if (!Platform.isMacOS && !Platform.isLinux) windowManager.setAsFrameless();
+
+  doWhenWindowReady(() {
+    appWindow.minSize = initialSize;
+    appWindow.size = initialSize;
+    appWindow.alignment = Alignment.center;
+    appWindow.show();
+  });
+}
+
+/// Fvm App
+class FvmApp extends StatefulWidget {
+  const FvmApp({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<FvmApp> createState() => _FvmAppState();
+}
+
+class _FvmAppState extends State<FvmApp> {
+  bool _isMaximized = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (SettingsService.box == null) {
+      return const ErrorDBScreen();
+    }
+
+    WindowManager.instance.isMaximized().then((isMaximized) {
+      setState(() {
+        _isMaximized = isMaximized;
+      });
+    });
+
+    final appContent = ValueListenableBuilder<Box<SidekickSettings>>(
+      valueListenable: SettingsService.box!.listenable(),
+      builder: (context, box, widget) {
+        final settings = SettingsService.read();
+        return OKToast(
+          child: MaterialApp(
+            localizationsDelegates: [
+              settings.localizationsDelegate,
+              ...GlobalMaterialLocalizations.delegates,
+              GlobalWidgetsLocalizations.delegate,
+              ...GlobalCupertinoLocalizations.delegates,
+            ],
+            locale: settings.locale ?? languageManager.supportedLocales.first,
+            supportedLocales: languageManager.supportedLocales,
+            localeResolutionCallback: (
+              Locale? locale,
+              Iterable<Locale> supportedLocales,
+            ) {
+              if (locale == null) {
+                if (settings.locale != null) {
+                  return settings.locale;
+                }
+                return supportedLocales.first;
+              }
+              for (final supportedLocale in supportedLocales) {
+                if (supportedLocale.languageCode == locale.languageCode ||
+                    supportedLocale.countryCode == locale.countryCode) {
+                  if (settings.locale != null) {
+                    return settings.locale;
+                  }
+                  return supportedLocale;
+                }
+              }
+              if (settings.locale != null) {
+                return settings.locale;
+              }
+              return supportedLocales.first;
+            },
+            title: kAppTitle,
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: getThemeMode(settings.themeMode),
+            home: const AppShell(),
+          ),
+        );
+      },
+    );
+
+    if (!Platform.isLinux) {
+      return appContent;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey,
+        ),
+        borderRadius:
+            _isMaximized ? BorderRadius.zero : BorderRadius.circular(15),
+        // boxShadow: const [
+        //   BoxShadow(
+        //     color: Colors.grey,
+        //     offset: Offset(10, 10),
+        //     blurRadius: 8,
+        //     spreadRadius: 0,
+        //   ),
+        // ],
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: appContent,
+    );
+  }
+}
